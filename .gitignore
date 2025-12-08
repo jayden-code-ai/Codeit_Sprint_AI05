@@ -1,0 +1,8 @@
+.cache/
+.vscode/
+*.zip
+=2.14.7
+=14.0.1
+lotto/
+
+Python_Class_Basic.ipynb

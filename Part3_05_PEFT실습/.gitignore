@@ -1,0 +1,14 @@
+data/
+wandb/
+model/
+checkpoints/
+bpe/
+bert-emotion-lora/
+gemma-text-to-sum4/
+lora_bert_mrpc/
+merged_model/
+*.zip
+*.pt
+*.pth
+*.pyc
+*.csv

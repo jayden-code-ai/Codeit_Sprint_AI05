@@ -1,0 +1,10 @@
+data/
+wandb/
+model/
+checkpoints/
+bpe/
+*.zip
+*.pt
+*.pth
+*.pyc
+*.csv
