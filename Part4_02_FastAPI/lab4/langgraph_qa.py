@@ -60,15 +60,15 @@ class AgentState(TypedDict):
     classification: str
     response: str
 
-# 2. 모델 설정
-model = ChatOpenAI(model="gpt-4o-mini", api_key=os.getenv("OPENAI_API_KEY"))
+# 2. 모델 설정 
+model = ChatOpenAI(model="gpt-4o-mini", api_key=os.getenv("OPENAI_API_KEY"))    # type: ignore
 
-# --- 노드(Nodes) 정의 ---
-# 노드 1: 질문 분류기 (Classifier)
+# 3. 노드(Node) 정의
+# 노드 1: 질문 분류기
 def classify_input(state: AgentState):
     print(f"--- 분류중: {state['question']}")
     prompt = ChatPromptTemplate.from_template(
-        """다음 질문을 'TECHNICAL'(프로그래밍/코딩/기술 관련) 또는 'CASUAL'(일상 대화/인사) 중 하나로 분류하세요.
+        """다음 질문을 "TECHNICAL"(프로그래밍/코딩/기술 관련) 또는 "CASUAL"(일상 대화/인사)중 하나로 분류해줘.
             질문: {question}
             결과:
         """
@@ -80,26 +80,25 @@ def classify_input(state: AgentState):
     classification = "TECHNICAL" if "TECHNICAL" in result.upper() else "CASUAL"
     return {"classification": classification}
 
-# 노드 2: 기술 전문가 답변
+# 노드 2: 기술 전문가 응답자
 def handle_technical(state: AgentState):
-    print("=========== 기술 전문가 모드")
+    print(f"============ 기술 전문가 모드 ============")
     prompt = ChatPromptTemplate.from_template(
-        "당신은 시니어 파이썬 개발자입니다. 질문에 대해 명확하고 엄격하게 답변하세요.\n질문: {question}"
+        "당신은 시니어 파이썬 개발자입니다. 질문에 대해 명확하고 엄격하게 답변하세요. \n질문: {question}"
     )
     chain = prompt | model | StrOutputParser()
     return {"response": chain.invoke({"question": state['question']})}
-   
+
 # 노드 3: 친절한 친구 답변
 def handle_casual(state: AgentState):
-    print("=========== 일상 대화 모드")
+    print(f"============ 친절한 친구 모드 ============")
     prompt = ChatPromptTemplate.from_template(
-        "당신은 친절한 친구입니다. 이모지를 사용해서 따뜻하게 답변하세요.\n질문: {question}"
+        "당신은 친정한 친구입니다. 이모지를 사용해서 따뜻하게 답변하세요. \n질문: {question}"
     )
     chain = prompt | model | StrOutputParser()
     return {"response": chain.invoke({"question": state['question']})}
 
-
-# --- 그래프(Graph) 구성 ---
+# 4. 그래프(Graph) 구성
 workflow = StateGraph(AgentState)
 
 # 노드 추가
@@ -117,7 +116,7 @@ def decide_route(state: AgentState):
     else:
         return "friendly_bot"
     
-# 조건부 엣지 연결 (classifier -> tech_expert OR friendly_bot)
+# 조건부 엣지 연결 (classifier -> tech_expert / friendly_bot)
 workflow.add_conditional_edges(
     "classifier",
     decide_route,
@@ -134,15 +133,14 @@ workflow.add_edge("friendly_bot", END)
 # 그래프 컴파일 (실행 가능한 객체로 변환)
 app_graph = workflow.compile()
 
-
-# --- FastAPI 엔드포인트 ---
+# 5. FastAPI 엔드포인트
 class ChatRequest(BaseModel):
     message: str
 
 @app.post("/smart_chat")
 async def smart_chat(req: ChatRequest):
     inputs = {"question": req.message}
-    result = await app_graph.ainvoke(inputs)    
+    result = await app_graph.ainvoke(inputs)    # type: ignore
 
     return {
         "type": result["classification"],
