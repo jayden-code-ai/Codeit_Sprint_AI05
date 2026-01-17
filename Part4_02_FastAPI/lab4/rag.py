@@ -81,7 +81,7 @@ async def lifespan(app: FastAPI):
     Question: {question}
     """
     prompt = ChatPromptTemplate.from_template(template)
-    model = ChatOpenAI(model="gpt-4o-mini", api_key=os.getenv("OPENAI_API_KEY"))
+    model = ChatOpenAI(model="gpt-4o-mini", api_key=os.getenv("OPENAI_API_KEY"))    # type: ignore
 
     # 4. LCEL 체인 구성 (Retriever -> Context 병합 -> Prompt -> LLM -> String)
     rag_chain = (
